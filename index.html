@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ultimate Numerology – Life Path & Lo Shu Grid</title>
-  <meta name="description" content="Free personalized numerology report with Life Path, Soul Urge, Lo Shu Grid, Compatibility, and actionable advice in Hindi/English.">
+  <meta name="description" content="Free personalized numerology report with Life Path, Soul Urge, Lo Shu Grid, and actionable life advice in Hindi/English.">
   
   <meta property="og:title" content="Ultimate Numerology – Free Personalized Report">
   <meta property="og:description" content="Discover your cosmic blueprint with dynamic Lo Shu Grid analysis.">
@@ -29,12 +29,13 @@
   <section class="card">
     <h2>🔮 Generate Your Personalized Report</h2>
     <input id="name1" placeholder="Your Full Name (as on birth certificate)" />
-    <input id="dob1" type="date" />
+    <!-- Fallback for browsers that don't support date input -->
+    <input id="dob1" type="date" onerror="this.type='text'; this.placeholder='YYYY-MM-DD'" />
 
     <div class="divider">— or check compatibility —</div>
 
     <input id="name2" placeholder="Partner / Friend Name (optional)" />
-    <input id="dob2" type="date" />
+    <input id="dob2" type="date" onerror="this.type='text'; this.placeholder='YYYY-MM-DD'" />
 
     <div class="loader" id="loader">Analyzing your cosmic code...</div>
 
@@ -52,7 +53,7 @@
     <p><b>Life Path:</b> <span id="clife"></span> | <b>Soul Urge:</b> <span id="csoul"></span></p>
     <p><b>Expression:</b> <span id="cexpr"></span> | <b>Karmic Lesson:</b> <span id="ckarma"></span></p>
     <p><b>Certificate No:</b> <span id="cno"></span></p>
-    <div id="qr-code" class="qr-placeholder">QR code will appear on PDF</div>
+    <div id="qr-code" class="qr-placeholder">Your unique QR code will appear here</div>
     
     <div class="actions">
       <button class="btn primary" onclick="downloadPDF()">📥 Download PDF</button>
@@ -72,10 +73,12 @@
 </main>
 
 <footer>
-  <p>This tool uses Pythagorean Numerology & Lo Shu Grid for self-reflection.</p>
+  <p>This tool uses authentic Pythagorean Numerology & Lo Shu Grid (1-9 only).</p>
   <p>© 2025 Ultimate Numerology – World’s Most Advanced Free Platform</p>
 </footer>
 
+<!-- QR Code Generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="script.js"></script>
 </body>
