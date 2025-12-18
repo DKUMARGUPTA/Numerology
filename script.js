@@ -1,4 +1,3 @@
-// Auto-detect language
 let lang = navigator.language.startsWith('hi') ? 'hi' : 'en';
 
 const letterMap = {
@@ -15,8 +14,9 @@ function reduceToSingle(num) {
 }
 
 function getLifePath(dob) {
-  const clean = dob.replace(/-/g, '');
-  return reduceToSingle([...clean].reduce((a, b) => a + Number(b), 0));
+  const clean = dob.replace(/[^0-9]/g, '');
+  const sum = [...clean].reduce((a, b) => a + Number(b), 0);
+  return reduceToSingle(sum);
 }
 
 function getNameNumber(name, useVowels) {
@@ -34,7 +34,8 @@ function getNameNumber(name, useVowels) {
 function getKarmicLessons(name) {
   const present = new Set();
   for (let c of name.toUpperCase().replace(/[^A-Z]/g, '')) {
-    present.add(letterMap[c]);
+    const num = letterMap[c];
+    if (num >= 1 && num <= 9) present.add(num);
   }
   const missing = [];
   for (let i = 1; i <= 9; i++) {
@@ -43,12 +44,90 @@ function getKarmicLessons(name) {
   return missing.length ? missing.join(', ') : (lang === 'hi' ? 'कोई नहीं' : 'None');
 }
 
-function getCompatibility(lp1, lp2) {
-  const diff = Math.abs(lp1 - lp2);
-  if (diff === 0) return { score: 'Very High', desc: lang === 'hi' ? 'आप एक-दूसरे को गहराई से समझते हैं। आध्यात्मिक जुड़ाव।' : 'Deep mutual understanding. Spiritual alignment.' };
-  if ([1,3,6,9].includes(diff)) return { score: 'High', desc: lang === 'hi' ? 'आपकी ऊर्जाएँ पूरक हैं। संतुलन और समझ संभव है।' : 'Your energies are complementary. Balance and understanding are possible.' };
-  if ([2,4,5,7,8].includes(diff)) return { score: 'Medium', desc: lang === 'hi' ? 'सीखने के अवसर हैं, लेकिन प्रयास की आवश्यकता है।' : 'Growth opportunities, but requires effort.' };
-  return { score: 'Low', desc: lang === 'hi' ? 'चुनौतियाँ हैं, लेकिन सीखना संभव है।' : 'Challenges exist, but learning is possible.' };
+// ======== CORRECT Lo Shu Grid (1-9 only, ignore 0) ========
+function getLoShuAnalysis(dob) {
+  const digits = dob.replace(/[^0-9]/g, '').split('').map(Number).filter(d => d >= 1 && d <= 9);
+  const present = new Set(digits);
+  const gridNumbers = [4,9,2,3,5,7,8,1,6];
+  const missing = gridNumbers.filter(num => !present.has(num));
+  const presentList = gridNumbers.filter(num => present.has(num));
+  return { present: presentList, missing };
+}
+
+function getMissingNumberAdvice(missing) {
+  const advice = [];
+  if (missing.includes(1)) advice.push(lang === 'hi' ? "आत्मविश्वास और स्वतंत्रता" : "Self-confidence and independence");
+  if (missing.includes(2)) advice.push(lang === 'hi' ? "भावनात्मक संवेदनशीलता और सहयोग" : "Emotional sensitivity and cooperation");
+  if (missing.includes(3)) advice.push(lang === 'hi' ? "स्व-अभिव्यक्ति और रचनात्मकता" : "Self-expression and creativity");
+  if (missing.includes(4)) advice.push(lang === 'hi' ? "अनुशासन, व्यवस्था और कड़ी मेहनत" : "Discipline, order, and hard work");
+  if (missing.includes(5)) advice.push(lang === 'hi' ? "स्वतंत्रता, लचीलापन और निर्णय क्षमता" : "Freedom, adaptability, and decision-making");
+  if (missing.includes(6)) advice.push(lang === 'hi' ? "पारिवारिक जिम्मेदारी और सेवा भावना" : "Family responsibility and nurturing");
+  if (missing.includes(7)) advice.push(lang === 'hi' ? "आत्म-विश्लेषण और आध्यात्मिकता" : "Self-analysis and spirituality");
+  if (missing.includes(8)) advice.push(lang === 'hi' ? "व्यावहारिकता, धन प्रबंधन और अधिकार" : "Practicality, money management, and authority");
+  if (missing.includes(9)) advice.push(lang === 'hi' ? "मानवता के प्रति समर्पण और उदारता" : "Humanitarianism and generosity");
+  
+  return advice.length 
+    ? (lang === 'hi' ? "आपको इन क्षेत्रों में विकास की आवश्यकता है: " : "You need to develop in these areas: ") + advice.join(', ')
+    : (lang === 'hi' ? "आपके Lo Shu Grid में सभी महत्वपूर्ण अंक मौजूद हैं।" : "All key numbers are present in your Lo Shu Grid.");
+}
+
+function getCareerAdvice(lifePath, missing) {
+  let base = "";
+  if (lifePath === 9) {
+    base = lang === 'hi' ? "आपके लिए एनजीओ, शिक्षण, कला, या मानवतावादी कार्य सर्वोत्तम हैं।" : "NGO, teaching, arts, or humanitarian work are ideal for you.";
+  } else if (lifePath === 1) {
+    base = lang === 'hi' ? "उद्यमिता, नेतृत्व, या प्रबंधन आपके लिए उपयुक्त है।" : "Entrepreneurship, leadership, or management suit you.";
+  } else if (lifePath === 2) {
+    base = lang === 'hi' ? "काउंसलिंग, टीम समन्वय, या रचनात्मक क्षेत्र आपके अनुकूल हैं।" : "Counseling, team coordination, or creative fields suit you.";
+  } else if (lifePath === 3) {
+    base = lang === 'hi' ? "लेखन, कला, मार्केटिंग, या संचार आपके लिए उत्तम हैं।" : "Writing, arts, marketing, or communication are excellent for you.";
+  } else if (lifePath === 4) {
+    base = lang === 'hi' ? "इंजीनियरिंग, लॉजिस्टिक्स, या वित्त आपके लिए उपयुक्त हैं।" : "Engineering, logistics, or finance suit you.";
+  } else if (lifePath === 5) {
+    base = lang === 'hi' ? "यात्रा, बिक्री, प्रशिक्षण, या विज्ञापन आपके लिए आदर्श हैं।" : "Travel, sales, training, or advertising are ideal.";
+  } else if (lifePath === 6) {
+    base = lang === 'hi' ? "शिक्षा, स्वास्थ्य देखभाल, काउंसलिंग, या एचआर आपके लिए उपयुक्त हैं।" : "Teaching, healthcare, counseling, or HR suit you.";
+  } else if (lifePath === 7) {
+    base = lang === 'hi' ? "शोध, आध्यात्मिकता, तकनीक, या विश्लेषण आपके लिए उत्तम हैं।" : "Research, spirituality, tech, or analytics are excellent.";
+  } else if (lifePath === 8) {
+    base = lang === 'hi' ? "वित्त, निवेश, प्रशासन, या कानून आपके लिए उपयुक्त हैं।" : "Finance, investment, administration, or law suit you.";
+  } else {
+    base = lang === 'hi' ? "आपके लिए विविध क्षेत्र उपयुक्त हैं।" : "Diverse fields suit you.";
+  }
+
+  if (missing.includes(4)) {
+    base += (lang === 'hi' ? " लेकिन अनुशासन की कमी के कारण अव्यवस्थित वातावरण से बचें।" : " But avoid chaotic environments due to lack of discipline.");
+  }
+  if (missing.includes(8)) {
+    base += (lang === 'hi' ? " वित्तीय योजना के बिना स्वतंत्रता जोखिम भरी है।" : " Freedom without financial planning is risky.");
+  }
+  if (missing.includes(6)) {
+    base += (lang === 'hi' ? " पारिवारिक जिम्मेदारियों से बचने की प्रवृत्ति हो सकती है।" : " You may tend to avoid deep family commitments.");
+  }
+
+  return base;
+}
+
+function getMoneyAdvice(missing) {
+  if (missing.includes(8) || missing.includes(4)) {
+    return lang === 'hi' 
+      ? "धन आपके काम या सेवा भाव से आएगा, लेकिन बचत योजना और लंबी अवधि की योजना के बिना यह टिकेगा नहीं। भावनाओं से निवेश न करें।"
+      : "Money will come through your work or service, but without savings planning and long-term strategy, it won’t last. Never invest emotionally.";
+  }
+  return lang === 'hi' 
+    ? "आपका वित्तीय प्रवाह स्थिर है। नियमित बचत जारी रखें।"
+    : "Your financial flow is stable. Maintain consistent savings.";
+}
+
+function getRelationshipAdvice(missing) {
+  if (missing.includes(2) || missing.includes(6)) {
+    return lang === 'hi' 
+      ? "आप दिल से देते हैं, लेकिन जब सराहना नहीं मिलती, तो चुपचाप टूट जाते हैं। स्पष्ट संवाद बनाए रखें और अपनी आवश्यकताएँ व्यक्त करें।"
+      : "You give from the heart, but get silently hurt when unappreciated. Maintain clear communication and express your needs.";
+  }
+  return lang === 'hi' 
+    ? "आपके रिश्ते सहज और सहयोगात्मक हैं। भावनाओं को साझा करते रहें।"
+    : "Your relationships are harmonious. Keep expressing your feelings openly.";
 }
 
 const interpretations = {
@@ -70,102 +149,17 @@ function getInterp(num) {
   return interpretations[num] ? interpretations[num][lang] : { title: "Unknown", desc: "Interpretation not available." };
 }
 
-// ======== Lo Shu Grid Analysis ========
-function getLoShuAnalysis(dob) {
-  const digits = dob.replace(/-/g, '').split('').map(Number);
-  const count = Array(10).fill(0);
-  digits.forEach(d => {
-    if (d >= 0 && d <= 9) count[d]++;
-  });
-
-  const gridNumbers = [4,9,2,3,5,7,8,1,6];
-  const missing = gridNumbers.filter(num => count[num] === 0);
-  const present = gridNumbers.filter(num => count[num] > 0);
-
-  return { present, missing, count };
+function getCompatibility(lp1, lp2) {
+  const diff = Math.abs(lp1 - lp2);
+  if (diff === 0) return { score: 'Very High', desc: lang === 'hi' ? 'आप एक-दूसरे को गहराई से समझते हैं। आध्यात्मिक जुड़ाव।' : 'Deep mutual understanding. Spiritual alignment.' };
+  if ([1,3,6,9].includes(diff)) return { score: 'High', desc: lang === 'hi' ? 'आपकी ऊर्जाएँ पूरक हैं। संतुलन और समझ संभव है।' : 'Your energies are complementary. Balance and understanding are possible.' };
+  if ([2,4,5,7,8].includes(diff)) return { score: 'Medium', desc: lang === 'hi' ? 'सीखने के अवसर हैं, लेकिन प्रयास की आवश्यकता है।' : 'Growth opportunities, but requires effort.' };
+  return { score: 'Low', desc: lang === 'hi' ? 'चुनौतियाँ हैं, लेकिन सीखना संभव है।' : 'Challenges exist, but learning is possible.' };
 }
 
-function getMissingNumberAdvice(missing) {
-  const advice = [];
-  
-  if (missing.includes(4)) advice.push(lang === 'hi' 
-    ? "अनुशासन (Discipline): आपको सिस्टम और रूटीन अपनाने की आवश्यकता है।" 
-    : "Discipline: You need to adopt systems and routines.");
-    
-  if (missing.includes(2)) advice.push(lang === 'hi' 
-    ? "भावनात्मक संतुलन (Emotional Balance): अपनी भावनाओं को दबाएं नहीं, बल्कि संवारें।" 
-    : "Emotional Balance: Don’t suppress emotions — express them wisely.");
-    
-  if (missing.includes(5)) advice.push(lang === 'hi' 
-    ? "निर्णय लेना (Decision-Making): अधिक विश्लेषण के बजाय क्रिया पर ध्यान दें।" 
-    : "Decision-Making: Focus on action, not over-analysis.");
-    
-  if (missing.includes(7)) advice.push(lang === 'hi' 
-    ? "आत्म-विश्लेषण (Self-Reflection): अकेले समय लें, अपने भीतर झांकें।" 
-    : "Self-Reflection: Spend time alone to understand your inner truth.");
-    
-  if (missing.includes(8)) advice.push(lang === 'hi' 
-    ? "वित्त प्रबंधन (Money Management): भावनाओं से पैसे का फैसला न लें। बचत योजना बनाएं।" 
-    : "Money Management: Never make financial decisions emotionally. Create a savings plan.");
-    
-  return advice.length 
-    ? advice.join('<br>• ') 
-    : (lang === 'hi' ? "कोई महत्वपूर्ण अंक ग्रिड में अनुपस्थित नहीं है।" : "No critical numbers missing from your grid.");
-}
-
-function getCareerAdvice(lifePath, missing) {
-  const base = {
-    1: lang === 'hi' ? "उद्यमिता, नेतृत्व, प्रबंधन" : "Entrepreneurship, Leadership, Management",
-    2: lang === 'hi' ? "काउंसलिंग, टीम कोऑर्डिनेशन, डिज़ाइन" : "Counseling, Team Coordination, Design",
-    3: lang === 'hi' ? "कला, लेखन, संचार, मार्केटिंग" : "Arts, Writing, Communication, Marketing",
-    4: lang === 'hi' ? "इंजीनियरिंग, लॉजिस्टिक्स, फाइनेंस" : "Engineering, Logistics, Finance",
-    5: lang === 'hi' ? "यात्रा, बिक्री, ट्रेनिंग, एडवर्टाइजिंग" : "Travel, Sales, Training, Advertising",
-    6: lang === 'hi' ? "शिक्षा, चिकित्सा, काउंसलिंग, एचआर" : "Teaching, Healthcare, Counseling, HR",
-    7: lang === 'hi' ? "शोध, आध्यात्म, तकनीक, विश्लेषण" : "Research, Spirituality, Tech, Analytics",
-    8: lang === 'hi' ? "वित्त, निवेश, प्रशासन, न्याय" : "Finance, Investment, Administration, Law",
-    9: lang === 'hi' ? "एनजीओ, सिखाना, कला, सेवा" : "NGO, Teaching, Arts, Humanitarian Work"
-  }[lifePath] || (lang === 'hi' ? "विविध क्षेत्र" : "Diverse fields");
-
-  if (missing.includes(4)) {
-    base += (lang === 'hi' 
-      ? " — लेकिन अनुशासन के बिना सफलता स्थायी नहीं होगी।" 
-      : " — but without discipline, success won’t be sustainable.");
-  }
-  if (missing.includes(8)) {
-    base += (lang === 'hi' 
-      ? " — वित्तीय शिक्षा लेना अनिवार्य है।" 
-      : " — financial literacy is essential.");
-  }
-
-  return base;
-}
-
-function getMoneyAdvice(missing) {
-  if (missing.includes(8) || missing.includes(4)) {
-    return lang === 'hi' 
-      ? "पैसा आएगा, लेकिन बचत और लंबी अवधि की योजना के बिना टिकेगा नहीं। भावनाओं से निवेश न करें।"
-      : "Money will come, but without savings and long-term planning, it won’t last. Never invest emotionally.";
-  }
-  return lang === 'hi' 
-    ? "आपका वित्तीय प्रवाह स्थिर है। नियमित बचत जारी रखें।"
-    : "Your financial flow is stable. Maintain consistent savings.";
-}
-
-function getRelationshipAdvice(missing) {
-  if (missing.includes(2) || missing.includes(6)) {
-    return lang === 'hi' 
-      ? "आप दिल से देते हैं, लेकिन जब सराहना नहीं मिलती, तो चुपचाप टूट जाते हैं। स्पष्ट संवाद बनाए रखें।"
-      : "You give from the heart, but get silently hurt when unappreciated. Maintain clear communication.";
-  }
-  return lang === 'hi' 
-    ? "आपके रिश्ते सहज और सहयोगात्मक हैं। भावनाओं को साझा करते रहें।"
-    : "Your relationships are harmonious. Keep expressing your feelings openly.";
-}
-
-// ======== Main Report Generator ========
 function generateReport() {
   const name1 = document.getElementById("name1").value.trim();
-  const dob1 = document.getElementById("dob1").value;
+  const dob1 = document.getElementById("dob1").value.trim();
   if (!name1 || !dob1) return alert(lang === 'hi' ? "कृपया अपना नाम और जन्म तिथि भरें" : "Please enter your name and date of birth.");
 
   document.getElementById("loader").style.display = "block";
@@ -175,7 +169,6 @@ function generateReport() {
     const soulUrge = getNameNumber(name1, true);
     const expression = getNameNumber(name1, false);
     const karmic = getKarmicLessons(name1);
-
     const loShu = getLoShuAnalysis(dob1);
     const missingAdvice = getMissingNumberAdvice(loShu.missing);
     const careerAdvice = getCareerAdvice(lifePath, loShu.missing);
@@ -207,8 +200,7 @@ function generateReport() {
       <div class="section-title">${lang === 'hi' ? '5. Lo Shu Grid विश्लेषण' : '5. Lo Shu Grid Analysis'}</div>
       <p><b>${lang === 'hi' ? 'मौजूद अंक:' : 'Numbers Present:'}</b> ${loShu.present.join(', ')}</p>
       <p><b>${lang === 'hi' ? 'अनुपस्थित अंक:' : 'Missing Numbers:'}</b> ${loShu.missing.length ? loShu.missing.join(', ') : (lang === 'hi' ? 'कोई नहीं' : 'None')}</p>
-      <p><b>${lang === 'hi' ? 'सुधार के क्षेत्र:' : 'Areas to Develop:'}</b></p>
-      <p>• ${missingAdvice}</p>
+      <p>${missingAdvice}</p>
 
       <div class="section-title">${lang === 'hi' ? '6. करियर सलाह' : '6. Career Guidance'}</div>
       <p>${careerAdvice}</p>
@@ -223,9 +215,8 @@ function generateReport() {
       <p style="color:#e11d48;">${lang === 'hi' ? "यह भविष्य की गारंटी नहीं, बल्कि आत्म-समझ का उपकरण है। आपका प्रयास, कौशल और क्रिया ही आपका भाग्य बनाते हैं।" : "This is not a guarantee of the future — it’s a tool for self-understanding. Your effort, skill, and action shape your destiny."}</p>
     `;
 
-    // Compatibility (optional)
     const name2 = document.getElementById("name2").value.trim();
-    const dob2 = document.getElementById("dob2").value;
+    const dob2 = document.getElementById("dob2").value.trim();
     if (name2 && dob2) {
       const lp2 = getLifePath(dob2);
       const comp = getCompatibility(lifePath, lp2);
@@ -249,6 +240,17 @@ function generateReport() {
     document.getElementById("cno").innerText = "NUM-" + Math.floor(100000 + Math.random() * 900000);
     document.getElementById("certificate").classList.remove("hidden");
 
+    // Generate QR Code
+    const qrPlaceholder = document.getElementById("qr-code");
+    qrPlaceholder.innerHTML = "";
+    new QRCode(qrPlaceholder, {
+      text: window.location.href + '?name=' + encodeURIComponent(name1) + '&dob=' + dob1,
+      width: 100,
+      height: 100,
+      colorDark: "#1f3c4d",
+      colorLight: "#ffffff"
+    });
+
     document.getElementById("loader").style.display = "none";
   }, 800);
 }
@@ -268,7 +270,7 @@ function downloadPDF() {
     margin: 0.5,
     filename: 'Numerology-Certificate.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).save();
@@ -284,7 +286,7 @@ function emailReport() {
 
 function shareWhatsApp() {
   const name = document.getElementById("cname").innerText;
-  const url = encodeURIComponent(window.location.href);
+  const url = encodeURIComponent(window.location.href + '?shared=true');
   window.open(`https://wa.me/?text=Check%20out%20my%20Numerology%20Profile%20-%20${name}%20%F0%9F%94%AE%0A${url}`, '_blank');
 }
 
@@ -295,4 +297,4 @@ function shareFacebook() {
 
 function shareInstagram() {
   alert(lang === 'hi' ? "Instagram पर लिंक शेयर नहीं की जा सकती। कृपया अपना प्रोफाइल स्क्रीनशॉट लेकर पोस्ट करें!" : "Instagram doesn't allow link sharing. Please screenshot your report and post it!");
-                                         }
+}
