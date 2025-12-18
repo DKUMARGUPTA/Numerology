@@ -1,4 +1,49 @@
-let lang = navigator.language.startsWith('hi') ? 'hi' : 'en';
+// Initialize
+let lang = 'en';
+let isDarkMode = false;
+
+// Auto detect language (but default to English for clarity)
+if (navigator.language.startsWith('hi')) lang = 'hi';
+
+// Apply initial language
+document.addEventListener('DOMContentLoaded', () => {
+  updateLanguageUI();
+  // Auto dark mode
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    toggleTheme();
+  }
+});
+
+function toggleLanguage() {
+  lang = lang === 'hi' ? 'en' : 'hi';
+  updateLanguageUI();
+  
+  // If report exists, regenerate
+  if (document.getElementById('report').style.display !== 'none') {
+    generateReport();
+  }
+}
+
+function updateLanguageUI() {
+  const langs = document.querySelectorAll('.lang');
+  langs.forEach(el => {
+    el.classList.remove('active');
+    if (el.dataset.lang === lang) {
+      el.classList.add('active');
+    }
+  });
+  
+  // Update placeholder
+  const nameInput = document.getElementById('name');
+  nameInput.placeholder = lang === 'hi' ? 'अपना पूरा नाम लिखें' : 'Your Full Name';
+}
+
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+  document.body.classList.toggle('dark-mode', isDarkMode);
+  const icon = document.querySelector('.toggle-icon');
+  icon.textContent = isDarkMode ? '☀️' : '🌙';
+}
 
 function reduceToSingle(numStr) {
   let sum = numStr.split('').reduce((a, b) => a + Number(b), 0);
@@ -13,7 +58,8 @@ function generateReport() {
   const dobInput = document.getElementById('dob').value;
 
   if (!name || !dobInput) {
-    alert(lang === 'hi' ? 'कृपया नाम और जन्म तिथि भरें।' : 'Please enter your name and date of birth.');
+    const msg = lang === 'hi' ? 'कृपया नाम और जन्म तिथि भरें।' : 'Please enter your name and date of birth.';
+    alert(msg);
     return;
   }
 
@@ -21,25 +67,21 @@ function generateReport() {
   loader.style.display = 'block';
 
   setTimeout(() => {
-    // Life Path Calculation
     const cleanDOB = dobInput.replace(/-/g, '');
     const sumAll = cleanDOB.split('').reduce((a, b) => a + Number(b), 0);
     const lifePath = reduceToSingle(sumAll.toString());
 
-    // Lo Shu Grid
     const loShu = [4, 9, 2, 3, 5, 7, 8, 1, 6];
     const presentSet = new Set(cleanDOB.split('').map(Number));
     const missing = loShu.filter(n => !presentSet.has(n));
 
-    // Generate Lo Shu Grid HTML with animation
     let gridHTML = '<div class="loshu-grid">';
     for (let num of loShu) {
       const className = presentSet.has(num) ? 'present' : 'missing';
-      gridHTML += `<div class="loshu-cell ${className}" title="${lang === 'hi' ? 'मौजूद' : 'Present'}">${num}</div>`;
+      gridHTML += `<div class="loshu-cell ${className}">${num}</div>`;
     }
     gridHTML += '</div>';
 
-    // Interpretations
     const texts = {
       lifePath: {
         hi: "आपका Life Path Number 9 है — आप एक आदर्शवादी, सहायक और समाज-सेवी हैं। आप दूसरों के लिए कुछ करना पसंद करते हैं, लेकिन अपनी भावनाओं को छुपाते हैं। आपकी ताकत: नेतृत्व, समझदारी, सेवा। चुनौती: अति-भावुकता, अपेक्षाएँ, आत्म-त्याग।",
@@ -67,7 +109,6 @@ function generateReport() {
       }
     };
 
-    // Build Report
     const reportHTML = `
       <div class="section-title">${lang === 'hi' ? 'आपकी व्यक्तिगत रिपोर्ट' : 'Your Personal Report'}</div>
       <p><b>${lang === 'hi' ? 'नाम' : 'Name'}:</b> ${name}</p>
@@ -98,5 +139,5 @@ function generateReport() {
     document.getElementById('report').innerHTML = reportHTML;
     document.getElementById('report').style.display = 'block';
     loader.style.display = 'none';
-  }, 800);
+  }, 900);
 }
