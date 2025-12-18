@@ -1,7 +1,5 @@
-// Auto detect language (Hi/En)
 let lang = navigator.language.startsWith('hi') ? 'hi' : 'en';
 
-// Reduce number to single digit (with master number handling)
 function reduceToSingle(numStr) {
   let sum = numStr.split('').reduce((a, b) => a + Number(b), 0);
   while (sum > 9 && ![11, 22, 33].includes(sum)) {
@@ -33,11 +31,11 @@ function generateReport() {
     const presentSet = new Set(cleanDOB.split('').map(Number));
     const missing = loShu.filter(n => !presentSet.has(n));
 
-    // Generate Lo Shu Grid HTML
+    // Generate Lo Shu Grid HTML with animation
     let gridHTML = '<div class="loshu-grid">';
     for (let num of loShu) {
       const className = presentSet.has(num) ? 'present' : 'missing';
-      gridHTML += `<div class="loshu-cell ${className}">${num}</div>`;
+      gridHTML += `<div class="loshu-cell ${className}" title="${lang === 'hi' ? 'मौजूद' : 'Present'}">${num}</div>`;
     }
     gridHTML += '</div>';
 
@@ -71,29 +69,29 @@ function generateReport() {
 
     // Build Report
     const reportHTML = `
-      <div class="section-title">👤 ${lang === 'hi' ? 'आपकी व्यक्तिगत रिपोर्ट' : 'Your Personal Report'}</div>
+      <div class="section-title">${lang === 'hi' ? 'आपकी व्यक्तिगत रिपोर्ट' : 'Your Personal Report'}</div>
       <p><b>${lang === 'hi' ? 'नाम' : 'Name'}:</b> ${name}</p>
       <p><b>${lang === 'hi' ? 'जन्म तिथि' : 'Date of Birth'}:</b> ${dobInput}</p>
       
-      <div class="section-title">🔢 ${lang === 'hi' ? 'लाइफ पाथ नंबर' : 'Life Path Number'}</div>
+      <div class="section-title">${lang === 'hi' ? 'लाइफ पाथ नंबर' : 'Life Path Number'}</div>
       <p><b>${sumAll} → ${lifePath}</b></p>
       <p>${texts.lifePath[lang]}</p>
 
-      <div class="section-title">🧩 ${lang === 'hi' ? 'लो शु ग्रिड विश्लेषण' : 'Lo Shu Grid Analysis'}</div>
+      <div class="section-title">${lang === 'hi' ? 'लो शु ग्रिड विश्लेषण' : 'Lo Shu Grid Analysis'}</div>
       <p>${lang === 'hi' ? 'आपके जन्म तिथि में मौजूद अंक:' : 'Numbers present in your DOB:'} ${Array.from(presentSet).join(', ')}</p>
       <p>${texts.missing[lang]}</p>
       ${gridHTML}
 
-      <div class="section-title">💼 ${lang === 'hi' ? 'करियर' : 'Career'}</div>
+      <div class="section-title">${lang === 'hi' ? 'करियर' : 'Career'}</div>
       <p>${texts.career[lang]}</p>
 
-      <div class="section-title">💰 ${lang === 'hi' ? 'धन' : 'Money'}</div>
+      <div class="section-title">${lang === 'hi' ? 'धन' : 'Money'}</div>
       <p>${texts.money[lang]}</p>
 
-      <div class="section-title">❤️ ${lang === 'hi' ? 'संबंध' : 'Relationships'}</div>
+      <div class="section-title">${lang === 'hi' ? 'संबंध' : 'Relationships'}</div>
       <p>${texts.relationships[lang]}</p>
 
-      <div class="section-title">⚠️ ${lang === 'hi' ? 'सबसे ज़रूरी सच्चाई' : 'Most Important Truth'}</div>
+      <div class="section-title">${lang === 'hi' ? 'सबसे ज़रूरी सच्चाई' : 'Most Important Truth'}</div>
       <p><i>${texts.truth[lang]}</i></p>
     `;
 
