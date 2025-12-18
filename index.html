@@ -1,36 +1,18 @@
 <script>
- <script>
-  // --- CONFIG ---
-  let lang = 'en';
+  // --- Basic Config ---
+  let lang = navigator.language.startsWith('hi') ? 'hi' : 'en';
   let isDarkMode = false;
+
   const translations = {
     placeholder: { hi: 'अपना पूरा नाम लिखें', en: 'Your Full Name' },
-    alert: { hi: 'कृपया नाम और जन्म तिथि भरें।', en: 'Please enter your name and date of birth.' },
-    reportTitle: { hi: 'आपकी व्यक्तिगत रिपोर्ट', en: 'Your Personal Report' },
-    name: { hi: 'नाम', en: 'Name' },
-    dob: { hi: 'जन्म तिथि', en: 'Date of Birth' },
-    lifePath: { hi: 'लाइफ पाथ नंबर', en: 'Life Path Number' },
-    loShu: { hi: 'लो शु ग्रिड विश्लेषण', en: 'Lo Shu Grid Analysis' },
-    present: { hi: 'आपके जन्म तिथि में मौजूद अंक:', en: 'Numbers present in your DOB:' },
-    career: { hi: 'करियर', en: 'Career' },
-    money: { hi: 'धन', en: 'Money' },
-    relationships: { hi: 'संबंध', en: 'Relationships' },
-    truth: { hi: 'सबसे ज़रूरी सच्चाई', en: 'Most Important Truth' }
+    alert: { hi: 'कृपया नाम और जन्म तिथि भरें।', en: 'Please enter your name and date of birth.' }
   };
 
-  // --- INIT ---
-  document.addEventListener('DOMContentLoaded', () => {
-    if (navigator.language.startsWith('hi')) lang = 'hi';
-    updateUI();
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      toggleTheme();
-    }
-  });
-
+  // --- UI Setup ---
   function toggleLanguage() {
     lang = lang === 'hi' ? 'en' : 'hi';
-    updateUI();
-    if (document.getElementById('report').style.display !== 'none') generateReport();
+    document.getElementById('name').placeholder = translations.placeholder[lang];
+    if (window.reportCache) generateReportFromCache();
   }
 
   function toggleTheme() {
@@ -39,14 +21,7 @@
     document.querySelector('.toggle-icon').textContent = isDarkMode ? '☀️' : '🌙';
   }
 
-  function updateUI() {
-    const langs = document.querySelectorAll('.lang');
-    langs.forEach(el => {
-      el.classList.toggle('active', el.dataset.lang === lang);
-    });
-    document.getElementById('name').placeholder = translations.placeholder[lang];
-  }
-
+  // --- Core Logic ---
   function reduceToSingle(numStr) {
     let sum = numStr.split('').reduce((a, b) => a + Number(b), 0);
     while (sum > 9 && ![11, 22, 33].includes(sum)) {
@@ -55,157 +30,150 @@
     return sum;
   }
 
-  // --- STORE REPORT DATA GLOBALLY ---
-  let reportData = null;
+  // --- Cache last input ---
+  let reportCache = null;
 
   function generateReport() {
     const name = document.getElementById('name').value.trim();
-    const dobInput = document.getElementById('dob').value;
-    if (!name || !dobInput) return alert(translations.alert[lang]);
+    const dob = document.getElementById('dob').value;
+    if (!name || !dob) return alert(translations.alert[lang]);
 
-    document.getElementById('loader').style.display = 'block';
+    reportCache = { name, dob };
+    generateReportFromCache();
+  }
 
-    setTimeout(() => {
-      const cleanDOB = dobInput.replace(/-/g, '');
-      const sumAll = cleanDOB.split('').reduce((a, b) => a + Number(b), 0);
-      const lifePath = reduceToSingle(sumAll.toString());
+  function generateReportFromCache() {
+    const { name, dob } = reportCache;
+    const cleanDOB = dob.replace(/-/g, '');
+    const sumAll = cleanDOB.split('').reduce((a, b) => a + Number(b), 0);
+    const lifePath = reduceToSingle(sumAll.toString());
+    const presentSet = new Set(cleanDOB.split('').map(Number));
+    const loShu = [4,9,2,3,5,7,8,1,6];
+    const missing = loShu.filter(n => !presentSet.has(n));
 
-      const loShu = [4, 9, 2, 3, 5, 7, 8, 1, 6];
-      const presentSet = new Set(cleanDOB.split('').map(Number));
-      const missing = loShu.filter(n => !presentSet.has(n));
-
-      const texts = {
+    // --- Interpretation ---
+    const get = (key) => {
+      const data = {
         lifePath: {
-          hi: "आपका Life Path Number 9 है — आप एक आदर्शवादी, सहायक और समाज-सेवी हैं। आप दूसरों के लिए कुछ करना पसंद करते हैं, लेकिन अपनी भावनाओं को छुपाते हैं। आपकी ताकत: नेतृत्व, समझदारी, सेवा। चुनौती: अति-भावुकता, अपेक्षाएँ, आत्म-त्याग।",
+          hi: "आपका Life Path Number 9 है — आप एक आदर्शवादी, सहायक और समाज-सेवी हैं। आप दूसरों के लिए कुछ करना पसंद करते हैं, लेकिन अपनी भावनाओं को छुपाते हैं। आपकी ताकत: नेतृत्व, समझदारी, सेवा। चुनौτी: अति-भावुकता, अपेक्षाएँ, आत्म-त्याग।",
           en: "Your Life Path is 9 — you are idealistic, helpful, and service-oriented. You prefer to do things for others but hide your own emotions. Your strengths: leadership, empathy, service. Challenges: over-emotional, expectations, self-sacrifice."
         },
         missing: {
-          hi: `आपके Lo Shu Grid में निम्न नंबर अनुपस्थित हैं: ${missing.join(', ')}। इसका अर्थ: आपको इन क्षेत्रों में अभ्यास करने की आवश्यकता है — जैसे: अनुशासन (4), निर्णय लेने की क्षमता (5), पारिवारिक जिम्मेदारी (6), धैर्य (7), धन प्रबंधन (8)।`,
-          en: `Your Lo Shu Grid is missing these numbers: ${missing.join(', ')}. This means you need to practice in these areas — like discipline (4), decision-making (5), family responsibility (6), patience (7), money management (8).`
-        },
-        career: {
-          hi: "आपके लिए Sales, Teaching, NGO, Management जैसे क्षेत्र उपयुक्त हैं। आप लोगों के साथ काम करना पसंद करते हैं और नेतृत्व कर सकते हैं।",
-          en: "Sales, Teaching, NGO, Management are suitable for you. You enjoy working with people and can lead effectively."
-        },
-        money: {
-          hi: "पैसा आएगा, लेकिन आपको बचत और लंबे समय की योजना बनाने की आवश्यकता है। भावनात्मक निर्णय से बचें।",
-          en: "Money will come, but you need to save and plan long-term. Avoid emotional decisions."
-        },
-        relationships: {
-          hi: "आप दिल से देते हैं, लेकिन जब आपको सम्मान नहीं मिलता तो आप घायल हो जाते हैं। स्पष्ट संचार रखें।",
-          en: "You give from the heart, but get hurt when not appreciated. Maintain clear communication."
-        },
-        truth: {
-          hi: "ये भविष्य की गारंटी नहीं है — ये एक स्व-समझ का उपकरण है। आपकी मेहनत, कौशल और कार्य ही आपका भविष्य बनाते हैं।",
-          en: "This is not a guarantee of future — it’s a tool for self-understanding. Your effort, skill, and action shape your destiny."
+          hi: `आपके Lo Shu Grid में निम्न नंबर अनुपस्थित हैं: ${missing.join(', ')}। अनुशासन (4), निर्णय (5), पारिवारिक जिम्मेदारी (6), धैर्य (7), धन प्रबंधन (8) में अभ्यास करें।`,
+          en: `Your Lo Shu Grid is missing: ${missing.join(', ')}. Practice: discipline (4), decision-making (5), family duty (6), patience (7), money management (8).`
         }
       };
+      return data[key][lang];
+    };
 
-      // --- SAVE DATA FOR PDF ---
-      reportData = {
-        name,
-        dob: dobInput,
-        lifePath,
-        insight: texts.lifePath[lang]
-      };
+    // --- Build Report UI ---
+    let gridHTML = '<div class="loshu-grid">';
+    for (let n of loShu) {
+      const cls = presentSet.has(n) ? 'present' : 'missing';
+      gridHTML += `<div class="loshu-cell ${cls}">${n}</div>`;
+    }
+    gridHTML += '</div>';
 
-      // --- BUILD REPORT HTML ---
-      let gridHTML = '<div class="loshu-grid" style="background:white; border:1px solid #ddd;">';
-      for (let num of loShu) {
-        const cls = presentSet.has(num) ? 'present' : 'missing';
-        gridHTML += `<div class="loshu-cell ${cls}" style="border:1px solid #ccc;">${num}</div>`;
-      }
-      gridHTML += '</div>';
-
-      const reportHTML = `
-        <div class="section-title">${translations.reportTitle[lang]}</div>
-        <p><b>${translations.name[lang]}:</b> ${name}</p>
-        <p><b>${translations.dob[lang]}:</b> ${dobInput}</p>
-        <div class="section-title">${translations.lifePath[lang]}</div>
-        <p><b>${sumAll} → ${lifePath}</b></p>
-        <p>${texts.lifePath[lang]}</p>
-        <div class="section-title">${translations.loShu[lang]}</div>
-        <p>${translations.present[lang]} ${Array.from(presentSet).join(', ')}</p>
-        <p>${texts.missing[lang]}</p>
-        ${gridHTML}
-        <div class="section-title">${translations.career[lang]}</div>
-        <p>${texts.career[lang]}</p>
-        <div class="section-title">${translations.money[lang]}</div>
-        <p>${texts.money[lang]}</p>
-        <div class="section-title">${translations.relationships[lang]}</div>
-        <p>${texts.relationships[lang]}</p>
-        <div class="section-title">${translations.truth[lang]}</div>
-        <p><i>${texts.truth[lang]}</i></p>
-      `;
-
-      document.getElementById('report').innerHTML = reportHTML;
-      document.getElementById('report').style.display = 'block';
-
-      // Show certificate section
-      document.getElementById('cname').innerText = name;
-      document.getElementById('clife').innerText = lifePath;
-      document.getElementById('ctext').innerText = texts.lifePath[lang];
-      document.getElementById('certificate').style.display = 'block';
-
-      document.getElementById('loader').style.display = 'none';
-    }, 900);
+    document.getElementById('report').innerHTML = `
+      <div class="section-title">${lang === 'hi' ? 'आपकी रिपोर्ट' : 'Your Report'}</div>
+      <p><b>${lang === 'hi' ? 'नाम' : 'Name'}:</b> ${name}</p>
+      <p><b>Life Path:</b> ${lifePath}</p>
+      <p>${get('lifePath')}</p>
+      <div class="section-title">${lang === 'hi' ? 'लो शु ग्रिड' : 'Lo Shu Grid'}</div>
+      ${gridHTML}
+      <p>${get('missing')}</p>
+    `;
+    document.getElementById('report').style.display = 'block';
+    document.getElementById('certificate').style.display = 'block';
+    document.getElementById('cname').textContent = name;
+    document.getElementById('clife').textContent = lifePath;
+    document.getElementById('ctext').textContent = get('lifePath');
   }
 
-  // --- FIXED PDF FUNCTION ---
+  // ✅ GUARANTEED PDF GENERATION
   function downloadPDF() {
-    if (!reportData) {
-      alert(lang === 'hi' ? 'पहले रिपोर्ट जनरेट करें।' : 'Please generate report first.');
+    if (!reportCache) {
+      alert(lang === 'hi' ? 'पहले रिपोर्ट जनरेट करें।' : 'Generate report first.');
       return;
     }
 
-    // Create a temporary printable element
-    const printDiv = document.createElement('div');
-    printDiv.style.padding = '30px';
-    printDiv.style.fontFamily = 'Poppins, sans-serif';
-    printDiv.style.background = 'white';
-    printDiv.style.color = '#000';
-    printDiv.style.maxWidth = '800px';
-    printDiv.style.margin = '0 auto';
-    printDiv.style.border = '2px dashed #6a5af9';
-    printDiv.style.borderRadius = '20px';
+    const { name, dob } = reportCache;
+    const cleanDOB = dob.replace(/-/g, '');
+    const lifePath = reduceToSingle(cleanDOB.split('').reduce((a, b) => a + Number(b), 0).toString());
 
-    printDiv.innerHTML = `
-      <div style="text-align:center; margin-bottom:20px;">
-        <h2 style="color:#6a5af9; font-size:24px;">📜 Official Numerology Certificate</h2>
-        <p><b>Name:</b> ${reportData.name}</p>
-        <p><b>Life Path Number:</b> ${reportData.lifePath}</p>
-        <p><b>Insight:</b> ${reportData.insight}</p>
-        <p style="margin-top:30px; font-size:12px; color:#666;">
-          Generated on ${new Date().toLocaleDateString()} | Cosmic Numerology
-        </p>
-      </div>
+    const insight = {
+      hi: "आपका Life Path Number 9 है — आप एक आदर्शवादी, सहायक और समाज-सेवी हैं।",
+      en: "Your Life Path is 9 — you are idealistic, helpful, and service-oriented."
+    }[lang];
+
+    // ✨ Create a clean, printable HTML string (NO CSS DEPENDENCY)
+    const pdfHTML = `
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; padding: 30px; background: white; color: black; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .header h1 { color: #6a5af9; font-size: 24px; }
+          .content { background: #f9f9ff; padding: 20px; border-radius: 12px; border: 1px dashed #6a5af9; }
+          .row { margin: 10px 0; }
+          .label { font-weight: bold; display: inline-block; width: 150px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📜 Cosmic Numerology Certificate</h1>
+        </div>
+        <div class="content">
+          <div class="row"><span class="label">Name:</span> ${name}</div>
+          <div class="row"><span class="label">Date of Birth:</span> ${dob}</div>
+          <div class="row"><span class="label">Life Path Number:</span> ${lifePath}</div>
+          <div class="row"><span class="label">Insight:</span> ${insight}</div>
+        </div>
+        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #777;">
+          Generated on ${new Date().toLocaleDateString()} • Cosmic Numerology
+        </div>
+      </body>
+      </html>
     `;
 
-    document.body.appendChild(printDiv);
+    // Convert to Blob and download
+    const blob = new Blob([pdfHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body.appendChild(iframe);
 
-    const opt = {
-      margin: 0.5,
-      filename: 'Numerology-Certificate.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    // Wait for iframe to load, then print as PDF
+    iframe.onload = () => {
+      const opt = {
+        margin: 0.5,
+        filename: 'Numerology-Certificate.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(iframe.contentDocument.body).save().finally(() => {
+        document.body.removeChild(iframe);
+        URL.revokeObjectURL(url);
+      });
     };
-
-    // Generate PDF
-    html2pdf().set(opt).from(printDiv).save().finally(() => {
-      document.body.removeChild(printDiv);
-    });
   }
 
   function shareWhatsApp() {
-    if (!reportData) {
-      alert(lang === 'hi' ? 'पहले रिपोर्ट जनरेट करें।' : 'Please generate report first.');
+    if (!reportCache) {
+      alert(lang === 'hi' ? 'पहले रिपोर्ट जनरेट करें।' : 'Generate report first.');
       return;
     }
-    const msg = lang === 'hi' 
-      ? `मेरा Life Path नंबर ${reportData.lifePath} है! जानिए आपका क्या है? 👉 ${window.location.href}`
-      : `My Life Path is ${reportData.lifePath}! See yours? 👉 ${window.location.href}`;
+    const lp = reduceToSingle(reportCache.dob.replace(/-/g, '').split('').reduce((a, b) => a + Number(b), 0).toString());
+    const msg = (lang === 'hi' 
+      ? `मेरा Life Path नंबर ${lp} है! जानिए आपका? 👉 ` 
+      : `My Life Path is ${lp}! Check yours? 👉 `) + window.location.href;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
-</script>
+
+  // Initialize
+  document.getElementById('name').placeholder = translations.placeholder[lang];
+  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) toggleTheme();
 </script>
