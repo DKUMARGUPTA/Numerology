@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Numerology Report</title>
+  <meta name="description" content="Free Life Path & Lo Shu Grid Numerology Report with Missing Numbers Analysis">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">🔮</div>
+      <h1>Life Path & Lo Shu Grid Report</h1>
+    </header>
+
+    <div class="card">
+      <div class="input-group">
+        <input id="name" type="text" placeholder="Your Full Name" />
+      </div>
+      <div class="input-group">
+        <input id="dob" type="date" value="1993-10-22" />
+      </div>
+      <div class="loader" id="loader">Analyzing your cosmic blueprint...</div>
+      <button class="btn-primary" onclick="generateReport()">Generate Detailed Report</button>
+    </div>
+
+    <div id="report" class="card" style="display: none;"></div>
+  </div>
+
+  <footer>
+    <p>© 2025 Numerology Insight — For self-reflection only. Not a guarantee of future.</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
