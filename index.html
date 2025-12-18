@@ -4,10 +4,323 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cosmic Numerology | Life Path & Lo Shu Grid</title>
-  <meta name="description" content="AI-style advanced numerology report with Lo Shu Grid, Life Path, and Missing Numbers Analysis">
+  <meta name="description" content="AI-style advanced numerology report with Life Path, Lo Shu Grid, Missing Numbers, Career, Money & Relationship Insights. Free, private, no sign-up.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Cosmic Numerology – Free AI-Powered Report">
+  <meta property="og:description" content="Discover your Life Path, Lo Shu Grid, and destiny insights in seconds. 100% free & private.">
+  <meta property="og:image" content="https://i.imgur.com/7WJfzQl.png">
+  <meta property="og:url" content="https://your-site.vercel.app">
+  <meta property="og:type" content="website">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg-light: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
+      --bg-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+      --card-light: #ffffff;
+      --card-dark: #1a1a2e;
+      --text-light: #1e1e2f;
+      --text-dark: #f0f0ff;
+      --primary: #6a5af9;
+      --secondary: #8c7ae6;
+      --success: #4ade80;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      padding: 20px;
+      min-height: 100vh;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .dark-mode .theme-toggle {
+      background: rgba(0,0,0,0.2);
+      border-color: rgba(0,0,0,0.3);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      margin-bottom: 40px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Language Toggle */
+    .lang-toggle {
+      cursor: pointer;
+      user-select: none;
+    }
+    .lang-slider {
+      display: flex;
+      background: rgba(106, 90, 249, 0.15);
+      border: 1px solid rgba(106, 90, 249, 0.3);
+      border-radius: 20px;
+      padding: 4px;
+      width: 120px;
+      height: 32px;
+      transition: all 0.3s ease;
+    }
+    .lang {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #a0a0c0;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+    .lang.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(106, 90, 249, 0.4);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .card {
+      background: var(--card-light);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 30px;
+      box-shadow: 0 12px 40px rgba(106, 90, 249, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(106, 90, 249, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .dark-mode .card {
+      background: var(--card-dark);
+      border-color: rgba(255,255,255,0.1);
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 50px rgba(106, 90, 249, 0.25);
+    }
+
+    .input-group {
+      margin-bottom: 24px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid rgba(106, 90, 249, 0.2);
+      border-radius: 16px;
+      font-size: 16px;
+      font-family: inherit;
+      background: transparent;
+      color: inherit;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(106, 90, 249, 0.05);
+    }
+    .dark-mode .input-group input {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 14px 18px;
+      border: none;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
+    }
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .btn-whatsapp:hover {
+      background: #1da851;
+      transform: translateY(-2px);
+    }
+    .btn-pdf {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-pdf:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    .loader {
+      text-align: center;
+      color: var(--primary);
+      font-style: italic;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin: 24px 0 16px;
+      position: relative;
+      color: var(--text-light);
+    }
+    .dark-mode .section-title {
+      color: var(--text-dark);
+    }
+    .section-title::before {
+      content: '';
+      position: absolute;
+      left: -32px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    .loshu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 24px 0;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(106, 90, 249, 0.05);
+      border: 1px solid rgba(106, 90, 249, 0.15);
+    }
+    .dark-mode .loshu-grid {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .loshu-cell {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 22px;
+      transition: all 0.3s ease;
+      cursor: default;
+      border: 2px solid transparent;
+    }
+    .loshu-cell.present {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      border-color: #10b981;
+    }
+    .loshu-cell.missing {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--danger);
+      border-color: #ef4444;
+    }
+
+    #certificate {
+      display: none;
+      text-align: center;
+      border: 2px dashed var(--primary);
+      padding: 25px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      color: #7e7e9f;
+      font-size: 13px;
+      padding: 20px;
+    }
+
+    @media (max-width: 650px) {
+      .btn-group {
+        flex-direction: column;
+      }
+      .controls {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body class="light-mode">
   <div class="theme-toggle" onclick="toggleTheme()">
@@ -17,10 +330,12 @@
   <header>
     <div class="logo">🔮</div>
     <h1>Cosmic Numerology</h1>
-    <div class="lang-toggle" id="langToggle" onclick="toggleLanguage()">
-      <div class="lang-slider">
-        <span class="lang active" data-lang="hi">हिंदी</span>
-        <span class="lang" data-lang="en">English</span>
+    <div class="controls">
+      <div class="lang-toggle" onclick="toggleLanguage()">
+        <div class="lang-slider">
+          <span class="lang active" data-lang="hi">हिंदी</span>
+          <span class="lang" data-lang="en">English</span>
+        </div>
       </div>
     </div>
   </header>
@@ -34,17 +349,191 @@
         <input id="dob" type="date" value="1993-10-22" />
       </div>
       <div class="loader" id="loader">Analyzing your cosmic blueprint...</div>
-      <button class="btn-primary" onclick="generateReport()">Generate Detailed Report</button>
+      <button class="btn btn-primary" onclick="generateReport()">Generate Detailed Report</button>
     </section>
 
     <section id="report" class="card" style="display: none;"></section>
+
+    <section id="certificate" class="card">
+      <h2>📜 Official Numerology Certificate</h2>
+      <p><b>Name:</b> <span id="cname"></span></p>
+      <p><b>Life Path:</b> <span id="clife"></span></p>
+      <p><b>Insight:</b> <span id="ctext"></span></p>
+      <div class="btn-group">
+        <button class="btn btn-whatsapp" onclick="shareWhatsApp()">Share on WhatsApp</button>
+        <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </section>
   </main>
 
   <footer>
     <p>© 2025 Cosmic Numerology — For self-reflection only. Not a guarantee of future.</p>
+    <p>All data processed locally. Nothing is sent to any server.</p>
   </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="script.js"></script>
+  <script>
+    // --- CONFIG ---
+    let lang = 'en';
+    let isDarkMode = false;
+    const translations = {
+      placeholder: { hi: 'अपना पूरा नाम लिखें', en: 'Your Full Name' },
+      alert: { hi: 'कृपया नाम और जन्म तिथि भरें।', en: 'Please enter your name and date of birth.' },
+      reportTitle: { hi: 'आपकी व्यक्तिगत रिपोर्ट', en: 'Your Personal Report' },
+      name: { hi: 'नाम', en: 'Name' },
+      dob: { hi: 'जन्म तिथि', en: 'Date of Birth' },
+      lifePath: { hi: 'लाइफ पाथ नंबर', en: 'Life Path Number' },
+      loShu: { hi: 'लो शु ग्रिड विश्लेषण', en: 'Lo Shu Grid Analysis' },
+      present: { hi: 'आपके जन्म तिथि में मौजूद अंक:', en: 'Numbers present in your DOB:' },
+      career: { hi: 'करियर', en: 'Career' },
+      money: { hi: 'धन', en: 'Money' },
+      relationships: { hi: 'संबंध', en: 'Relationships' },
+      truth: { hi: 'सबसे ज़रूरी सच्चाई', en: 'Most Important Truth' }
+    };
+
+    // --- INIT ---
+    document.addEventListener('DOMContentLoaded', () => {
+      if (navigator.language.startsWith('hi')) lang = 'hi';
+      updateUI();
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        toggleTheme();
+      }
+    });
+
+    // --- UI FUNCTIONS ---
+    function toggleLanguage() {
+      lang = lang === 'hi' ? 'en' : 'hi';
+      updateUI();
+      if (document.getElementById('report').style.display !== 'none') generateReport();
+    }
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('.toggle-icon').textContent = isDarkMode ? '☀️' : '🌙';
+    }
+
+    function updateUI() {
+      const langs = document.querySelectorAll('.lang');
+      langs.forEach(el => {
+        el.classList.toggle('active', el.dataset.lang === lang);
+      });
+      document.getElementById('name').placeholder = translations.placeholder[lang];
+    }
+
+    // --- CORE LOGIC ---
+    function reduceToSingle(numStr) {
+      let sum = numStr.split('').reduce((a, b) => a + Number(b), 0);
+      while (sum > 9 && ![11, 22, 33].includes(sum)) {
+        sum = sum.toString().split('').reduce((a, b) => a + Number(b), 0);
+      }
+      return sum;
+    }
+
+    function generateReport() {
+      const name = document.getElementById('name').value.trim();
+      const dobInput = document.getElementById('dob').value;
+      if (!name || !dobInput) return alert(translations.alert[lang]);
+
+      document.getElementById('loader').style.display = 'block';
+
+      setTimeout(() => {
+        const cleanDOB = dobInput.replace(/-/g, '');
+        const sumAll = cleanDOB.split('').reduce((a, b) => a + Number(b), 0);
+        const lifePath = reduceToSingle(sumAll.toString());
+
+        const loShu = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+        const presentSet = new Set(cleanDOB.split('').map(Number));
+        const missing = loShu.filter(n => !presentSet.has(n));
+
+        let gridHTML = '<div class="loshu-grid">';
+        for (let num of loShu) {
+          const cls = presentSet.has(num) ? 'present' : 'missing';
+          gridHTML += `<div class="loshu-cell ${cls}">${num}</div>`;
+        }
+        gridHTML += '</div>';
+
+        const texts = {
+          lifePath: {
+            hi: "आपका Life Path Number 9 है — आप एक आदर्शवादी, सहायक और समाज-सेवी हैं। आप दूसरों के लिए कुछ करना पसंद करते हैं, लेकिन अपनी भावनाओं को छुपाते हैं। आपकी ताकत: नेतृत्व, समझदारी, सेवा। चुनौती: अति-भावुकता, अपेक्षाएँ, आत्म-त्याग।",
+            en: "Your Life Path is 9 — you are idealistic, helpful, and service-oriented. You prefer to do things for others but hide your own emotions. Your strengths: leadership, empathy, service. Challenges: over-emotional, expectations, self-sacrifice."
+          },
+          missing: {
+            hi: `आपके Lo Shu Grid में निम्न नंबर अनुपस्थित हैं: ${missing.join(', ')}। इसका अर्थ: आपको इन क्षेत्रों में अभ्यास करने की आवश्यकता है — जैसे: अनुशासन (4), निर्णय लेने की क्षमता (5), पारिवारिक जिम्मेदारी (6), धैर्य (7), धन प्रबंधन (8)।`,
+            en: `Your Lo Shu Grid is missing these numbers: ${missing.join(', ')}. This means you need to practice in these areas — like discipline (4), decision-making (5), family responsibility (6), patience (7), money management (8).`
+          },
+          career: {
+            hi: "आपके लिए Sales, Teaching, NGO, Management जैसे क्षेत्र उपयुक्त हैं। आप लोगों के साथ काम करना पसंद करते हैं और नेतृत्व कर सकते हैं।",
+            en: "Sales, Teaching, NGO, Management are suitable for you. You enjoy working with people and can lead effectively."
+          },
+          money: {
+            hi: "पैसा आएगा, लेकिन आपको बचत और लंबे समय की योजना बनाने की आवश्यकता है। भावनात्मक निर्णय से बचें।",
+            en: "Money will come, but you need to save and plan long-term. Avoid emotional decisions."
+          },
+          relationships: {
+            hi: "आप दिल से देते हैं, लेकिन जब आपको सम्मान नहीं मिलता तो आप घायल हो जाते हैं। स्पष्ट संचार रखें।",
+            en: "You give from the heart, but get hurt when not appreciated. Maintain clear communication."
+          },
+          truth: {
+            hi: "ये भविष्य की गारंटी नहीं है — ये एक स्व-समझ का उपकरण है। आपकी मेहनत, कौशल और कार्य ही आपका भविष्य बनाते हैं।",
+            en: "This is not a guarantee of future — it’s a tool for self-understanding. Your effort, skill, and action shape your destiny."
+          }
+        };
+
+        const reportHTML = `
+          <div class="section-title">${translations.reportTitle[lang]}</div>
+          <p><b>${translations.name[lang]}:</b> ${name}</p>
+          <p><b>${translations.dob[lang]}:</b> ${dobInput}</p>
+          <div class="section-title">${translations.lifePath[lang]}</div>
+          <p><b>${sumAll} → ${lifePath}</b></p>
+          <p>${texts.lifePath[lang]}</p>
+          <div class="section-title">${translations.loShu[lang]}</div>
+          <p>${translations.present[lang]} ${Array.from(presentSet).join(', ')}</p>
+          <p>${texts.missing[lang]}</p>
+          ${gridHTML}
+          <div class="section-title">${translations.career[lang]}</div>
+          <p>${texts.career[lang]}</p>
+          <div class="section-title">${translations.money[lang]}</div>
+          <p>${texts.money[lang]}</p>
+          <div class="section-title">${translations.relationships[lang]}</div>
+          <p>${texts.relationships[lang]}</p>
+          <div class="section-title">${translations.truth[lang]}</div>
+          <p><i>${texts.truth[lang]}</i></p>
+        `;
+
+        document.getElementById('report').innerHTML = reportHTML;
+        document.getElementById('report').style.display = 'block';
+
+        // Certificate
+        document.getElementById('cname').innerText = name;
+        document.getElementById('clife').innerText = lifePath;
+        document.getElementById('ctext').innerText = texts.lifePath[lang];
+        document.getElementById('certificate').style.display = 'block';
+
+        document.getElementById('loader').style.display = 'none';
+      }, 900);
+    }
+
+    // --- SHARE & PDF ---
+    function shareWhatsApp() {
+      const name = document.getElementById('name').value || 'User';
+      const lp = document.getElementById('clife').innerText || '7';
+      const msg = lang === 'hi' 
+        ? `मेरा Life Path नंबर ${lp} है! जानिए आपका क्या है? 👉 ${window.location.href}`
+        : `My Life Path is ${lp}! See yours? 👉 ${window.location.href}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function downloadPDF() {
+      const element = document.getElementById('certificate');
+      const opt = {
+        margin: 0.5,
+        filename: 'Cosmic-Numerology-Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
 </body>
 </html>
